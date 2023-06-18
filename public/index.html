@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title></title>
+		<style>
+			body {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				height: 100vh;
+				margin: 0;
+			}
+
+			.center {
+				width: 50%;
+			}
+
+			input {
+				margin: 1rem;
+			}
+			input[type="url"] {
+				width: 20rem;
+			}
+			input[type="text"] {
+				width: 20rem;
+			}
+			#markdown-display {
+				background: rgb(239, 239, 239);
+				width: 100%;
+				min-height: 10rem;
+				border: 1rem;
+				overflow: scroll;
+				font-family: monospace;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="center">
+			<input type="text" placeholder="Notion API Key" />
+			<input type="url" placeholder="Notion Page URL" />
+			<button>Get Markdown</button>
+			<pre id="markdown-display"></pre>
+		</div>
+		<script>
+			async function submitToApi(apiKey, url) {
+				const notionUrl = url;
+				const notionApiKey = apiKey;
+
+				try {
+					const response = await fetch("/api/notionToMarkdown", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({ notionUrl, notionApiKey }),
+					});
+
+					if (!response.ok) {
+						console.log(response)
+						throw new Error(
+							`HTTP error! status: ${response.status}`
+						);
+					}
+
+					const { markdown } = await response.json();
+					return markdown
+				} catch (error) {
+					console.error("An error occurred:", error);
+				}
+			}
+			let apiKeyInput = document.querySelector("input[type=text]");
+			let urlInput = document.querySelector("input[type=url]");
+			let button = document.querySelector("button");
+			let markdownDisplay = document.querySelector("#markdown-display");
+			button.addEventListener("click", async (e) => {
+				let url = urlInput.value;
+				let apiKey = apiKeyInput.value;
+				markdownDisplay.innerText = await submitToApi(apiKey, url);
+			});
+		</script>
+	</body>
+</html>
